@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import random
 
+import ipaddress
 import psycopg2
 from faker import Faker
 
@@ -60,11 +61,11 @@ def nextAvailable():
     # create a cursor
     cur = conn.cursor()
     cur.execute("SELECT MAX(mac_id) FROM mac")
-    print("Next available is: ", cur.fetchone()+1)
+    print("Next available is: ", cur.fetchone()[0]+1)
 
 
 
-def transform():
+def transformIP():
     print('Connecting to the PostgreSQL database...')
     conn = psycopg2.connect(
         host="localhost",
@@ -73,6 +74,13 @@ def transform():
         password="Ihatemyself1")
     # create a cursor
     cur = conn.cursor()
+    cur.execute("SELECT mac_ip FROM mac")
+    print("The number of parts: ", cur.rowcount)
+    row = cur.fetchone()
+
+    while row is not None:
+        print(bin(int(ipaddress.IPv4Address(row[0]))))
+        row = cur.fetchone()
 
 
 def generateData():
@@ -99,7 +107,7 @@ def generateData():
 
 
 
-def transformIP(country):
+def transformIPbyCountry(country):
     print('Connecting to the PostgreSQL database...')
     conn = psycopg2.connect(
         host="localhost",
@@ -108,8 +116,12 @@ def transformIP(country):
         password="Ihatemyself1")
     # create a cursor
     cur = conn.cursor()
+    cur.execute(f"SELECT mac_ip FROM mac WHERE mac_country='{country}'")
+    print("The number of parts: ", cur.rowcount)
+    row = cur.fetchone()
 
+    while row is not None:
+        print(bin(int(ipaddress.IPv4Address(row[0]))))
+        row = cur.fetchone()
 
-
-generateData()
 
